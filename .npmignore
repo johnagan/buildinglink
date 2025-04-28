@@ -2,6 +2,11 @@
 # when publishing a package. The following entries are commonly ignored:
 
 node_modules
-dist
 tests
+src
+
+.github
+.env.test
+
+tsconfig.json
 jest.config.js
