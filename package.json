@@ -8,6 +8,9 @@
     "type": "git",
     "url": "git+https://github.com/johnagan/buildinglink.git"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
