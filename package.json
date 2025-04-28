@@ -4,10 +4,7 @@
   "description": "A TypeScript client for interacting with the BuildingLink system, handling various authentication flows and redirects.",
   "main": "dist/client.js",
   "types": "dist/client.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/johnagan/buildinglink.git"
-  },
+  "repository": "https://github.com/johnagan/buildinglink",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
   },
