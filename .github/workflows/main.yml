@@ -1,4 +1,4 @@
-name: Publish to npm
+name: Publish to NPM
 on:
   release:
     types: [published]
@@ -10,13 +10,23 @@ jobs:
       id-token: write
     steps:    
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      
+      - name: Setup NPM registry
+        uses: actions/setup-node@v4
         with:
           node-version: '20.x'
           registry-url: 'https://registry.npmjs.org'
+      
       - name: Setup pnpm
         uses: pnpm/action-setup@v4.1.0
-      - run: pnpm build
-      - run: pnpm publish --provenance --access public
+      
+      - name: Install packages
+        run: pnpm install
+      
+      - name: Build distribution 
+        run: pnpm build
+      
+      - name: Publish to NPM
+        run: pnpm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
