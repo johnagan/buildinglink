@@ -6,7 +6,7 @@
   "types": "dist/client.d.ts",
   "repository": "https://github.com/johnagan/buildinglink",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
     "test": "jest",
