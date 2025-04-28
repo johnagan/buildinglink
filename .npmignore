@@ -1,0 +1,7 @@
+# This file is used to specify files and directories that should be ignored by npm
+# when publishing a package. The following entries are commonly ignored:
+
+node_modules
+dist
+tests
+jest.config.js
