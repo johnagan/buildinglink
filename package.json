@@ -1,6 +1,6 @@
 {
   "name": "buildinglink",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A TypeScript client for interacting with the BuildingLink system, handling various authentication flows and redirects.",
   "main": "dist/client.js",
   "types": "dist/client.d.ts",
