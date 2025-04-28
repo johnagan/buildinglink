@@ -9,22 +9,20 @@ jobs:
       contents: read
       id-token: write
     steps:    
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.event.repository.default_branch }}
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4.1.0
       
-      - name: Setup NPM registry
+      - name: Install Node
         uses: actions/setup-node@v4
         with:
           cache: pnpm
           node-version: '20.x'
           registry-url: 'https://registry.npmjs.org'
       
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4.1.0
-      
-      - name: Install packages
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
       
       - name: Build distribution 
