@@ -22,7 +22,7 @@ describe("BuildingLink Library", () => {
   });
 
   it("can get library listings", async () => {
-    for await (const doc of client.library.documents()) {
+    for await (const doc of client.library.listDocuments()) {
       expect(doc.fileName).toBeDefined();
       expect(doc.fileId).toBeDefined();
       expect(doc.downloadUrl).toBeDefined();

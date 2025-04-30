@@ -68,9 +68,6 @@ export class BuildingLinkLibrary {
     const fileLink = document.querySelector("a[href^=getFile]:last-child, a[href^=GetAttachment]:last-child");
 
     if (fileLink) {
-      // Get file URL
-      const { baseUrl } = this.client.options;
-
       // get download url
       const downloadHref = fileLink.getAttribute("href")!;
       doc.downloadUrl = new URL(downloadHref, viewUrl).toString();
