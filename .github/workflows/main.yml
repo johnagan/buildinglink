@@ -1,6 +1,7 @@
 name: Publish to NPM
-on: [push, pull_request]
-
+on:
+  release:
+    types: [published]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,8 +28,12 @@ jobs:
       - name: Build distribution
         run: pnpm build
 
-      - name: Merge Release
-        uses: mikeal/merge-release@master
+      - name: Automated Version Bump
+        uses: phips28/gh-action-bump-version@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
+      - name: Publish to NPM
+        run: pnpm publish --provenance --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
