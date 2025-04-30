@@ -65,34 +65,13 @@ const client = new BuildingLinkClient({
 
 // documents() is an async generator function, so you can use it with for await
 // to iterate through all documents (basic information only)
-for await (const doc of client.library.documents()) {
+for await (const doc of client.library.listDocuments()) {
   console.log(`Document Title: ${doc.title}`);
-  console.log(`Document Visibility: ${doc.visibility}`);
-  console.log(`View URL: ${doc.viewUrl}`);
-}
-
-// Only return building documents
-for await (const doc of client.library.documents(DocumentVisibility.Building)) {
-  console.log(`Building Document: ${doc.title}`);
-}
-
-// Only return unit documents
-for await (const doc of client.library.documents(DocumentVisibility.Unit)) {
-  console.log(`Building Document: ${doc.title}`);
-}
-
-// Get full details for documents (slower, but more information)
-for await (const doc of client.library.documents(DocumentVisibility.Building, true)) {
-  console.log(`Document: ${doc.title}`);
   console.log(`Posted By: ${doc.postedBy}`);
   console.log(`Posted On: ${doc.postedOn.toLocaleDateString()}`);
   console.log(`Tags: ${doc.tags.join(", ")}`);
   console.log(`Download URL: ${doc.downloadUrl}`);
 }
-
-// Get a specific document by ID and visibility
-const buildingDoc = await client.library.document(12345, DocumentVisibility.Building);
-const unitDoc = await client.library.document(67890, DocumentVisibility.Unit);
 
 // Download a document file
 if (buildingDoc.downloadUrl) {
@@ -107,19 +86,18 @@ if (buildingDoc.downloadUrl) {
 
 The `LibraryDocument` interface provides the following properties:
 
-| Property    | Type               | Description                                            |
-| ----------- | ------------------ | ------------------------------------------------------ |
-| visibility  | DocumentVisibility | Whether the document is building-wide or unit-specific |
-| title       | string             | The title of the document                              |
-| tags        | string[]           | Array of tags associated with the document             |
-| postedBy    | string             | Name of the user who posted the document               |
-| postedOn    | Date               | Date when the document was posted                      |
-| viewUrl     | string             | URL where the document can be viewed                   |
-| revisedOn   | Date (nullable)    | Date when the document was last revised                |
-| downloadUrl | string (nullable)  | URL to download the document                           |
-| fileId      | number (nullable)  | File ID of the document                                |
-| fileName    | string (nullable)  | Filename of the document                               |
-| fileSize    | number (nullable)  | File size of the document                              |
+| Property      | Type              | Description                                            |
+| ------------- | ----------------- | ------------------------------------------------------ |
+| isAptDocument | boolean           | Whether the document is building-wide or unit-specific |
+| title         | string            | The title of the document                              |
+| tags          | string[]          | Array of tags associated with the document             |
+| postedBy      | string            | Name of the user who posted the document               |
+| postedOn      | Date              | Date when the document was posted                      |
+| viewUrl       | string            | URL where the document can be viewed                   |
+| downloadUrl   | string (nullable) | URL to download the document                           |
+| fileId        | number (nullable) | File ID of the document                                |
+| fileName      | string (nullable) | Filename of the document                               |
+| fileSize      | number (nullable) | File size of the document                              |
 
 ## 🧪 Testing
 

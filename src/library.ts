@@ -2,20 +2,12 @@ import type { BuildingLinkClient } from "./client";
 import type { HTMLElement } from "node-html-parser";
 
 /**
- * Enumerates the possible visibility options for documents in BuildingLink
- */
-export enum DocumentVisibility {
-  Building = "building",
-  Unit = "unit",
-}
-
-/**
  * Represents a document from BuildingLink's document library.
  * Documents can be either building-wide or unit-specific.
  */
 export interface LibraryDocument {
   /** Indicates whether the document belongs to the building or a specific unit */
-  visibility: DocumentVisibility;
+  isAptDocument: boolean;
   /** The title of the document */
   title: string;
   /** Array of tags associated with the document */
@@ -26,16 +18,12 @@ export interface LibraryDocument {
   postedOn: Date;
   /** URL where the document can be viewed */
   viewUrl: string;
-  /** Optional date when the document was last revised */
-  revisedOn?: Date;
   /** Optional URL to download the document */
   downloadUrl?: string;
   /** Optional filename of the document */
   fileName?: string;
   /** Optional file ID of the document */
   fileId?: number;
-  /** Optional file size of the document */
-  fileSize?: number;
 }
 
 export class BuildingLinkLibrary {
@@ -46,58 +34,16 @@ export class BuildingLinkLibrary {
   }
 
   /**
-   * Parses the file path from a BuildingLink document URL.
-   * @param a - The anchor element of the document link
-   * @param baseUrl - The base URL of the BuildingLink tenant
-   * @returns An object containing the file ID, download URL, and view URL
-   */
-  getFileInfo(a: HTMLElement, baseUrl: string) {
-    // get href
-    const link = a.getAttribute("onclick") || a.getAttribute("href") || "";
-
-    // Parse URL parts
-    const regex = /[?&]([^=]+)=(\d+)/;
-    const [_, paramName, fileId] = link.match(regex) || [];
-    const isAptDocument = /documentid/i.test(paramName);
-
-    // Get file paths
-    const viewFile = isAptDocument ? "ViewAptDocument" : "viewlibdoc";
-    const downloadFile = isAptDocument ? "GetAttachment" : "getFile";
-    const visibility = isAptDocument ? DocumentVisibility.Unit : DocumentVisibility.Building;
-
-    // Get file URL
-    const getUrl = (filename: string) => new URL(`${filename}.aspx?${paramName}=${fileId}`, baseUrl).toString();
-
-    // Return file listing
-    return {
-      visibility,
-      title: a.text?.trim(),
-      fileId: Number(fileId),
-      viewUrl: getUrl(viewFile),
-      downloadUrl: getUrl(downloadFile),
-    } satisfies Partial<LibraryDocument>;
-  }
-
-  /**
    * Scrapes a single document's details from BuildingLink.
-   * @param fileId - The ID of the document
-   * @param visibility - The visibility of the document
+   * @param filePath - The file path of the document
    * @returns Promise<LibraryDocument> - A promise that resolves to the document details
    * @private
    */
-  async document(fileId: number, visibility: DocumentVisibility) {
-    // Build url
-    const isBuildingDoc = visibility === DocumentVisibility.Building;
-    const aspFile = isBuildingDoc ? "viewlibdoc" : "ViewAptDocument";
-    const paramName = isBuildingDoc ? "id" : "documentid";
-
-    // Fetch document
-    const pathUrl = `Library/${aspFile}.aspx?${paramName}=${fileId}`;
-    const { document, url: viewUrl } = await this.client.fetchTenantPage(pathUrl);
+  async readDocument(filePath: string) {
+    const { document, url: viewUrl } = await this.client.fetchTenantPage(`Library/${filePath}`);
 
     // Get info rows
-    const infoSelector = isBuildingDoc ? "#InfoContainer tr" : ".DocInfo .Inner2 div";
-    const infoRows = document.querySelectorAll(infoSelector);
+    const infoRows = document.querySelectorAll("#InfoContainer tr, .DocInfo .Inner2 div");
 
     // Get posted on and tags
     const [postedOnValue, tagsValue] = infoRows.map((el) => el.text?.split(":")[1] || "");
@@ -105,12 +51,15 @@ export class BuildingLinkLibrary {
     // Get posted by and posted on
     const [postedBy, postedOn] = postedOnValue.split("on").map((s) => s.trim());
 
+    // Determine if the document is an apt document
+    const isAptDocument = /documentid/i.test(viewUrl);
+
     // Initialize document
     const doc: LibraryDocument = {
       title: document.querySelector("h3")?.textContent?.trim() || "",
       tags: tagsValue.split(":").map((tag) => tag.trim()),
       postedOn: new Date(postedOn),
-      visibility,
+      isAptDocument,
       postedBy,
       viewUrl,
     };
@@ -119,11 +68,20 @@ export class BuildingLinkLibrary {
     const fileLink = document.querySelector("a[href^=getFile]:last-child, a[href^=GetAttachment]:last-child");
 
     if (fileLink) {
-      // Get file details
-      const { fileId, downloadUrl, title: fileName } = this.getFileInfo(fileLink, viewUrl);
+      // Get file URL
+      const { baseUrl } = this.client.options;
 
-      // Assign file details to document
-      Object.assign(doc, { fileId, fileName, downloadUrl, viewUrl });
+      // get download url
+      const downloadHref = fileLink.getAttribute("href")!;
+      doc.downloadUrl = new URL(downloadHref, viewUrl).toString();
+
+      // Get file name
+      doc.fileName = fileLink.text?.trim();
+
+      // Extract the file id
+      const regex = /[?&][^=]+=(\d+)/;
+      const [_, id] = downloadHref.match(regex) || [];
+      doc.fileId = Number(id);
     }
 
     return doc;
@@ -131,27 +89,24 @@ export class BuildingLinkLibrary {
 
   /**
    * Retrieves all document links from the BuildingLink library.
-   * @param visibility - Optional parameter to filter documents by visibility (building or unit)
-   * @param includeFileDetails - Optional parameter to include file details in the returned documents -- MUCH slower (default: false)
    * @yields {Promise<LibraryDocumentListing>} Yields promises that resolve to individual document listings
    */
-  async *documents(
-    visibility?: DocumentVisibility,
-    includeFileDetails = false
-  ): AsyncGenerator<Partial<LibraryDocument>> {
-    const { document, url } = await this.client.fetchTenantPage("Library/Library.aspx");
+  async *listDocuments(): AsyncGenerator<Partial<LibraryDocument>> {
+    const { document } = await this.client.fetchTenantPage("Library/Library.aspx");
 
     // Get all document links
     const anchors = document.querySelectorAll("tr.rgRow, tr.rgAltRow");
-
-    for (const row of Array.from(anchors)) {
+    for (const row of anchors) {
+      // Look for a file link
       const fileLink = row.querySelector(".ViewLink a[onclick]");
-      if (fileLink) {
-        // Yield file link info
-        const info = this.getFileInfo(fileLink, url);
 
-        if (!visibility || info.visibility === visibility) {
-          yield includeFileDetails ? await this.document(info.fileId!, info.visibility) : info;
+      if (fileLink) {
+        // Get the url of the document
+        // can be viewlibdoc or ViewAptDocument
+        const match = fileLink.getAttribute("onClick")!.match(/popWin\('([^']+\.aspx\?(?:documentId|id)=\d+)'/);
+        if (match) {
+          // Fetch the document page
+          yield await this.readDocument(match[1]);
         }
       }
     }

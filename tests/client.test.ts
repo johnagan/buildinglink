@@ -39,7 +39,11 @@ describe("BuildingLinkClient", () => {
 
     describe("Mock authentication", () => {
       it("correctly initializes with default options", () => {
-        const client = new BuildingLinkClient();
+        const client = new BuildingLinkClient({
+          username: "testuser",
+          password: "testpass",
+        });
+
         expect(client.cookies).toEqual({});
         expect(client.token).toBeNull();
         expect(client.isAuthenticated).toBe(false);
@@ -48,7 +52,11 @@ describe("BuildingLinkClient", () => {
       });
 
       it("skips authentication if already authenticated", async () => {
-        const testClient = new BuildingLinkClient();
+        const testClient = new BuildingLinkClient({
+          username: "testuser",
+          password: "testpass",
+        });
+
         testClient.cookies = { "bl.auth.cookie.oidc": "test-token" };
 
         const mockResponse = {} as BuildingLinkResponse;
@@ -106,7 +114,10 @@ describe("BuildingLinkClient", () => {
       });
 
       it("stores token when submitting to OIDC endpoint", async () => {
-        const testClient = new BuildingLinkClient();
+        const testClient = new BuildingLinkClient({
+          username: "testuser",
+          password: "testpass",
+        });
 
         const mockDocument = parse(`
         <form action="/oidc/token" method="post">
@@ -143,7 +154,10 @@ describe("BuildingLinkClient", () => {
       });
 
       it("throws error when login fails", async () => {
-        const testClient = new BuildingLinkClient();
+        const testClient = new BuildingLinkClient({
+          username: "testuser",
+          password: "testpass",
+        });
 
         const mockDocument = parse(`<form action="/login" method="post"></form>`);
 
@@ -168,7 +182,11 @@ describe("BuildingLinkClient", () => {
 
   describe("Cookie management", () => {
     it("adds cookies to request headers", async () => {
-      const testClient = new BuildingLinkClient();
+      const testClient = new BuildingLinkClient({
+        username: "testuser",
+        password: "testpassword",
+      });
+
       testClient.cookies = {
         "test-cookie": "test-value",
         "another-cookie": "another-value",
@@ -184,7 +202,11 @@ describe("BuildingLinkClient", () => {
     });
 
     it("updates cookies from response headers", async () => {
-      const testClient = new BuildingLinkClient();
+      const testClient = new BuildingLinkClient({
+        username: "testuser",
+        password: "testpassword",
+      });
+
       const response = {
         headers: {
           getSetCookie: jest.fn().mockReturnValue(["cookie1=value1; path=/", "cookie2=value2; path=/; secure"]),
@@ -202,7 +224,11 @@ describe("BuildingLinkClient", () => {
 
   describe("HTML handling", () => {
     it("parses HTML responses", async () => {
-      const testClient = new BuildingLinkClient();
+      const testClient = new BuildingLinkClient({
+        username: "testuser",
+        password: "testpassword",
+      });
+
       const mockResponse = {
         headers: {
           get: jest.fn().mockReturnValue("text/html; charset=utf-8"),
@@ -218,7 +244,11 @@ describe("BuildingLinkClient", () => {
     });
 
     it("skips non-HTML responses", async () => {
-      const testClient = new BuildingLinkClient();
+      const testClient = new BuildingLinkClient({
+        username: "testuser",
+        password: "testpassword",
+      });
+
       const mockResponse = {
         headers: {
           get: jest.fn().mockReturnValue("application/json"),
@@ -234,7 +264,11 @@ describe("BuildingLinkClient", () => {
 
   describe("Redirect handling", () => {
     it("follows HTTP redirects", async () => {
-      const testClient = new BuildingLinkClient();
+      const testClient = new BuildingLinkClient({
+        username: "testuser",
+        password: "testpassword",
+      });
+
       const mockFetch = jest.fn().mockResolvedValue({
         status: 200,
         url: "https://www.buildinglink.com/redirected",
@@ -258,7 +292,11 @@ describe("BuildingLinkClient", () => {
     });
 
     it("follows script-based redirects", async () => {
-      const testClient = new BuildingLinkClient();
+      const testClient = new BuildingLinkClient({
+        username: "testuser",
+        password: "testpassword",
+      });
+
       const mockFetch = jest.fn().mockResolvedValue({
         status: 200,
         url: "https://www.buildinglink.com/dashboard",
@@ -279,7 +317,10 @@ describe("BuildingLinkClient", () => {
 
   describe("Fetch methods", () => {
     it("applies request hooks in order", async () => {
-      const testClient = new BuildingLinkClient();
+      const testClient = new BuildingLinkClient({
+        username: "testuser",
+        password: "testpassword",
+      });
 
       const mockFetch = jest.fn().mockResolvedValue({} as BuildingLinkResponse);
       global.fetch = mockFetch;
@@ -313,7 +354,10 @@ describe("BuildingLinkClient", () => {
     });
 
     it("applies response hooks in order", async () => {
-      const testClient = new BuildingLinkClient();
+      const testClient = new BuildingLinkClient({
+        username: "testuser",
+        password: "testpassword",
+      });
 
       const mockResponse = {} as BuildingLinkResponse;
       global.fetch = jest.fn().mockResolvedValue(mockResponse);
@@ -336,7 +380,11 @@ describe("BuildingLinkClient", () => {
     });
 
     it("correctly builds tenant path URLs", async () => {
-      const testClient = new BuildingLinkClient();
+      const testClient = new BuildingLinkClient({
+        username: "testuser",
+        password: "testpassword",
+      });
+
       testClient.fetch = jest.fn().mockResolvedValue({} as BuildingLinkResponse);
 
       await testClient.fetchTenantPage("Home/Dashboard");

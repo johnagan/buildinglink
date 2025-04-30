@@ -20,9 +20,9 @@ const BUILDINGLINK_TENANT_PATH = "/V2/Tenant";
  */
 export interface BuildingLinkOptions {
   /** BuildingLink username */
-  username?: string;
+  username: string;
   /** BuildingLink password */
-  password?: string;
+  password: string;
   /** Base URL for BuildingLink instance */
   baseUrl?: string;
 }
@@ -66,7 +66,7 @@ export interface BuildingLinkResponse extends Response {
  */
 export class BuildingLinkClient {
   /** Login credentials */
-  private options: BuildingLinkOptions;
+  public options: BuildingLinkOptions;
   /** Session cookies */
   public cookies: Record<string, string> = {};
   /** Library instance */
@@ -83,9 +83,14 @@ export class BuildingLinkClient {
    * Creates a new BuildingLink client instance
    * @param options - BuildingLink client options including username, password, and base URL
    */
-  constructor(options: BuildingLinkOptions = { baseUrl: BUILDINGLINK_BASE_URL }) {
-    //
+  constructor(options: BuildingLinkOptions) {
+    // Set options
     this.options = options;
+
+    // Set options
+    if (!this.options.baseUrl) {
+      this.options.baseUrl = BUILDINGLINK_BASE_URL;
+    }
 
     // Append section parsers
     this.library = new BuildingLinkLibrary(this);
@@ -162,8 +167,8 @@ export class BuildingLinkClient {
       let value = elm.getAttribute("value")!;
 
       // Set username and password
-      if (name === "Username") value = username!;
-      else if (name === "Password") value = password!;
+      if (name === "Username") value = username;
+      else if (name === "Password") value = password;
 
       formData[name] = value;
     });
