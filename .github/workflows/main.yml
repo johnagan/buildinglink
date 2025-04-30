@@ -6,7 +6,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       id-token: write
     steps:
       - name: Checkout
@@ -27,11 +27,6 @@ jobs:
 
       - name: Build distribution
         run: pnpm build
-
-      - name: Automated Version Bump
-        uses: phips28/gh-action-bump-version@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to NPM
         run: pnpm publish --provenance --access public --no-git-checks
