@@ -116,7 +116,7 @@ export class BuildingLinkLibrary {
     };
 
     // File details
-    const fileLink = document.querySelector("a[href^=getFile], a[href^=GetAttachment]");
+    const fileLink = document.querySelector("a[href^=getFile]:last-child, a[href^=GetAttachment]:last-child");
 
     if (fileLink) {
       // Get file details
@@ -146,7 +146,6 @@ export class BuildingLinkLibrary {
 
     for (const row of Array.from(anchors)) {
       const fileLink = row.querySelector(".ViewLink a[onclick]");
-
       if (fileLink) {
         // Yield file link info
         const info = this.getFileInfo(fileLink, url);
