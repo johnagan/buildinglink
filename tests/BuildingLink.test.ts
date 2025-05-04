@@ -1,36 +1,36 @@
-import { BuildingLinkClient, BuildingLinkResponse } from "../src/client";
+import { BuildingLink, BuildingLinkResponse } from "../src";
 import { parse } from "node-html-parser";
 import { config } from "dotenv";
 config({ path: ".env.test" });
 
 const { BUILDINGLINK_USERNAME, BUILDINGLINK_PASSWORD } = process.env;
 
-describe("BuildingLinkClient", () => {
+describe("BuildingLink", () => {
   if (!BUILDINGLINK_USERNAME || !BUILDINGLINK_PASSWORD) {
     throw new Error("Missing environment variables: BUILDINGLINK_USERNAME or BUILDINGLINK_PASSWORD");
   }
 
   describe("Authentication", () => {
-    let client: BuildingLinkClient;
+    let client: BuildingLink;
 
     describe("Real-world authentication", () => {
       beforeAll(() => {
         // Initialize client with test credentials
-        client = new BuildingLinkClient({
+        client = new BuildingLink({
           username: BUILDINGLINK_USERNAME!,
           password: BUILDINGLINK_PASSWORD!,
         });
       });
 
       it("can authenticate", async () => {
-        const response = await client.fetchTenantPage("Home/Default.aspx");
+        const response = await client.page("Home/Default.aspx");
         expect(client.isAuthenticated).toBe(true);
         expect(client.token).toBeDefined();
         expect(response.status).toBe(200);
       });
 
       it("fetches original url after authentication", async () => {
-        const { url, status } = await client.fetchTenantPage("Home/Default.aspx");
+        const { url, status } = await client.page("Home/Default.aspx");
 
         expect(status).toBe(200);
         expect(url).toBe("https://www.buildinglink.com/V2/Tenant/Home/DefaultNew.aspx");
@@ -39,20 +39,20 @@ describe("BuildingLinkClient", () => {
 
     describe("Mock authentication", () => {
       it("correctly initializes with default options", () => {
-        const client = new BuildingLinkClient({
+        const client = new BuildingLink({
           username: "testuser",
           password: "testpass",
         });
 
         expect(client.cookies).toEqual({});
-        expect(client.token).toBeNull();
+        expect(client.token).toBeUndefined();
         expect(client.isAuthenticated).toBe(false);
-        expect(client.hooks.requests.length).toBe(1);
+        expect(client.hooks.requests.length).toBe(2);
         expect(client.hooks.responses.length).toBe(4);
       });
 
       it("skips authentication if already authenticated", async () => {
-        const testClient = new BuildingLinkClient({
+        const testClient = new BuildingLink({
           username: "testuser",
           password: "testpass",
         });
@@ -70,11 +70,11 @@ describe("BuildingLinkClient", () => {
           password: "testpass",
           baseUrl: "https://test.example.com",
         };
-        const client = new BuildingLinkClient(options);
+        const client = new BuildingLink(options);
         expect(client.isAuthenticated).toBe(false);
       });
       it("submits login form with credentials", async () => {
-        const testClient = new BuildingLinkClient({
+        const testClient = new BuildingLink({
           username: "testuser",
           password: "testpass",
         });
@@ -114,7 +114,7 @@ describe("BuildingLinkClient", () => {
       });
 
       it("stores token when submitting to OIDC endpoint", async () => {
-        const testClient = new BuildingLinkClient({
+        const testClient = new BuildingLink({
           username: "testuser",
           password: "testpass",
         });
@@ -154,7 +154,7 @@ describe("BuildingLinkClient", () => {
       });
 
       it("throws error when login fails", async () => {
-        const testClient = new BuildingLinkClient({
+        const testClient = new BuildingLink({
           username: "testuser",
           password: "testpass",
         });
@@ -182,7 +182,7 @@ describe("BuildingLinkClient", () => {
 
   describe("Cookie management", () => {
     it("adds cookies to request headers", async () => {
-      const testClient = new BuildingLinkClient({
+      const testClient = new BuildingLink({
         username: "testuser",
         password: "testpassword",
       });
@@ -194,7 +194,7 @@ describe("BuildingLinkClient", () => {
 
       const request: RequestInit = { headers: { "Content-Type": "application/json" } };
       // Access private method via any type
-      const modifiedRequest = await (testClient as any).addCookies.call(testClient, request);
+      const modifiedRequest = await (testClient as any).addCookies.call(testClient, "", request);
 
       expect(modifiedRequest.headers).toHaveProperty("cookie");
       expect(modifiedRequest.headers.cookie).toContain("test-cookie=test-value");
@@ -202,7 +202,7 @@ describe("BuildingLinkClient", () => {
     });
 
     it("updates cookies from response headers", async () => {
-      const testClient = new BuildingLinkClient({
+      const testClient = new BuildingLink({
         username: "testuser",
         password: "testpassword",
       });
@@ -224,7 +224,7 @@ describe("BuildingLinkClient", () => {
 
   describe("HTML handling", () => {
     it("parses HTML responses", async () => {
-      const testClient = new BuildingLinkClient({
+      const testClient = new BuildingLink({
         username: "testuser",
         password: "testpassword",
       });
@@ -244,7 +244,7 @@ describe("BuildingLinkClient", () => {
     });
 
     it("skips non-HTML responses", async () => {
-      const testClient = new BuildingLinkClient({
+      const testClient = new BuildingLink({
         username: "testuser",
         password: "testpassword",
       });
@@ -264,7 +264,7 @@ describe("BuildingLinkClient", () => {
 
   describe("Redirect handling", () => {
     it("follows HTTP redirects", async () => {
-      const testClient = new BuildingLinkClient({
+      const testClient = new BuildingLink({
         username: "testuser",
         password: "testpassword",
       });
@@ -292,7 +292,7 @@ describe("BuildingLinkClient", () => {
     });
 
     it("follows script-based redirects", async () => {
-      const testClient = new BuildingLinkClient({
+      const testClient = new BuildingLink({
         username: "testuser",
         password: "testpassword",
       });
@@ -317,7 +317,7 @@ describe("BuildingLinkClient", () => {
 
   describe("Fetch methods", () => {
     it("applies request hooks in order", async () => {
-      const testClient = new BuildingLinkClient({
+      const testClient = new BuildingLink({
         username: "testuser",
         password: "testpassword",
       });
@@ -325,12 +325,12 @@ describe("BuildingLinkClient", () => {
       const mockFetch = jest.fn().mockResolvedValue({} as BuildingLinkResponse);
       global.fetch = mockFetch;
 
-      const hook1 = jest.fn().mockImplementation(async (req) => ({
+      const hook1 = jest.fn().mockImplementation(async (url, req) => ({
         ...req,
         headers: { ...req.headers, "X-Hook1": "value1" },
       }));
 
-      const hook2 = jest.fn().mockImplementation(async (req) => ({
+      const hook2 = jest.fn().mockImplementation(async (url, req) => ({
         ...req,
         headers: { ...req.headers, "X-Hook2": "value2" },
       }));
@@ -354,7 +354,7 @@ describe("BuildingLinkClient", () => {
     });
 
     it("applies response hooks in order", async () => {
-      const testClient = new BuildingLinkClient({
+      const testClient = new BuildingLink({
         username: "testuser",
         password: "testpassword",
       });
@@ -380,16 +380,135 @@ describe("BuildingLinkClient", () => {
     });
 
     it("correctly builds tenant path URLs", async () => {
-      const testClient = new BuildingLinkClient({
+      const testClient = new BuildingLink({
         username: "testuser",
         password: "testpassword",
       });
 
       testClient.fetch = jest.fn().mockResolvedValue({} as BuildingLinkResponse);
 
-      await testClient.fetchTenantPage("Home/Dashboard");
+      await testClient.page("Home/Dashboard");
 
-      expect(testClient.fetch).toHaveBeenCalledWith("/V2/Tenant/Home/Dashboard");
+      expect(testClient.fetch).toHaveBeenCalledWith("V2/Tenant/Home/Dashboard", expect.any(Object));
+    });
+  });
+
+  describe("Additional BuildingLink methods", () => {
+    let client: BuildingLink;
+
+    beforeEach(() => {
+      client = new BuildingLink({
+        username: "testuser",
+        password: "testpass",
+      });
+      client.token = { access_token: "mock-token" } as any;
+    });
+
+    it("calls api() with correct headers and returns response", async () => {
+      const mockResponse = { status: 200, json: jest.fn().mockResolvedValue({ data: "ok" }) } as any;
+      client.fetch = jest.fn().mockResolvedValue(mockResponse);
+
+      const result = await client.api("/test/api");
+      expect(client.fetch).toHaveBeenCalledWith(
+        expect.any(URL),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: "Bearer mock-token",
+            "ocp-apim-subscription-key": expect.any(String),
+          }),
+        })
+      );
+      expect(result).toBe(mockResponse);
+    });
+
+    it("getLibrary() parses library from page", async () => {
+      const mockDocument = { querySelector: jest.fn().mockReturnValue(undefined) } as any;
+      client.page = jest.fn().mockResolvedValue({ document: mockDocument, url: "https://test" });
+
+      // Only use jest.spyOn, do not assign parseLibrary directly
+      const libraryModule = require("../src/models/Library");
+      const parseLibrarySpy = jest
+        .spyOn(libraryModule, "parseLibrary")
+        .mockReturnValue({ aptDocuments: [], buildingDocuments: [] });
+
+      const result = await client.getLibrary();
+      expect(client.page).toHaveBeenCalledWith("Library/Library.aspx");
+      expect(parseLibrarySpy).toHaveBeenCalled();
+      expect(result).toEqual({ aptDocuments: [], buildingDocuments: [] });
+    });
+
+    it("getOccupant() returns occupant from API", async () => {
+      const mockOccupant = { id: "occ-1" };
+      client.api = jest.fn().mockResolvedValue({ json: jest.fn().mockResolvedValue(mockOccupant) });
+
+      const result = await client.getOccupant();
+      expect(client.api).toHaveBeenCalledWith("Properties/AuthenticatedUser/v1/property/occupant/get");
+      expect(result).toEqual(mockOccupant);
+    });
+
+    it("getUser() returns user from API", async () => {
+      const mockUser = { id: "user-1" };
+      client.fetch = jest.fn().mockResolvedValue({ json: jest.fn().mockResolvedValue(mockUser) });
+
+      const result = await client.getUser();
+      expect(client.fetch).toHaveBeenCalledWith(
+        "https://users.us1.buildinglink.com/users/authenticated",
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            "x-api-key": expect.any(String),
+            Authorization: "Bearer mock-token",
+          }),
+        })
+      );
+      expect(result).toEqual(mockUser);
+    });
+
+    it("getEvents() returns events from API", async () => {
+      const mockEvents = [{ id: "event-1" }];
+      client.api = jest.fn().mockResolvedValue({ json: jest.fn().mockResolvedValue(mockEvents) });
+
+      const from = new Date("2024-01-01");
+      const to = new Date("2024-01-02");
+      const result = await client.getEvents(from, to);
+      expect(client.api).toHaveBeenCalledWith(
+        expect.stringContaining("Calendar/Resident/v2/resident/events/filteredeventsrsvp?")
+      );
+      expect(result).toEqual(mockEvents);
+    });
+
+    it("getDeliveries() paginates and returns all deliveries", async () => {
+      const page1 = { value: [{ Id: 1 }], "@odata.nextLink": "/next" };
+      const page2 = { value: [{ Id: 2 }] };
+      client.api = jest
+        .fn()
+        .mockResolvedValueOnce({ json: jest.fn().mockResolvedValue(page1) })
+        .mockResolvedValueOnce({ json: jest.fn().mockResolvedValue(page2) });
+
+      const result = await client.getDeliveries();
+      expect(client.api).toHaveBeenCalledTimes(2);
+      expect(result).toEqual([{ Id: 1 }, { Id: 2 }]);
+    });
+
+    it("getPreferredVendors() paginates and returns all vendors", async () => {
+      const page1 = { value: [{ Provider: { Id: 1 } }], "@odata.nextLink": "/next" };
+      const page2 = { value: [{ Provider: { Id: 2 } }] };
+      client.api = jest
+        .fn()
+        .mockResolvedValueOnce({ json: jest.fn().mockResolvedValue(page1) })
+        .mockResolvedValueOnce({ json: jest.fn().mockResolvedValue(page2) });
+
+      const result = await client.getVendors();
+      expect(client.api).toHaveBeenCalledTimes(2);
+      expect(result).toEqual([{ Id: 1 }, { Id: 2 }]);
+    });
+
+    it("getProperties() returns authorized properties", async () => {
+      const mockProperties = { authorizedProperties: { data: [{ id: "prop-1" }] } };
+      client.api = jest.fn().mockResolvedValue({ json: jest.fn().mockResolvedValue(mockProperties) });
+
+      const result = await client.getBuildings();
+      expect(client.api).toHaveBeenCalledWith("Properties/AuthenticatedUser/v1/property/authorized-properties");
+      expect(result).toEqual([{ id: "prop-1" }]);
     });
   });
 });

@@ -1,20 +1,14 @@
 # 🏢 BuildingLink Client
 
-This is an unofficial TypeScript client for logging into and scraping BuildingLink content. Since BuildingLink doesn't have an official API and I other examples in GitHub used puppeteer, I decided to create a lightweight client for my own needs.
+This is an unofficial TypeScript client for logging into and scraping BuildingLink content.
 
 ## 🚀 Getting Started
 
-Install the package using your favorite package manager. We recommend `pnpm` because it's fast and efficient, just like your building's concierge (hopefully).
+Install the package using your favorite package manager.
 
 ```bash
 # Using npm
 npm install buildinglink
-
-# Using yarn
-yarn add buildinglink
-
-# Using pnpm (our favorite!)
-pnpm add buildinglink
 ```
 
 ## 🎮 Usage
@@ -22,9 +16,9 @@ pnpm add buildinglink
 This client is essentially a wrapper around the native fetch API, which does an auto-login as needed and stores session cookies for you.
 
 ```typescript
-import { BuildingLinkClient } from "buildinglink";
+import { BuildingLink } from "buildinglink";
 
-const client = new BuildingLinkClient({
+const client = new BuildingLink({
   username: "buildinglink_username",
   password: "buildinglink_password",
 });
@@ -34,13 +28,28 @@ const url = "https://www.buildinglink.com/V2/Tenant/Deliveries/Deliveries.aspx";
 const response = await client.fetch(url);
 
 // Shorthand for tenant pages
-const response = await client.fetchTenantPage("Deliveries/Deliveries.aspx");
+const response = await client.page("Deliveries/Deliveries.aspx");
 ```
+
+## 📦 Available Modules
+
+| Module        | Method                            | Description                                               |
+| ------------- | --------------------------------- | --------------------------------------------------------- |
+| Library       | `getLibrary()`                    | Access documents from the BuildingLink Library            |
+| Announcements | `getAnnouncements()`              | Access announcements from the BuildingLink                |
+| Events        | `getEvents(from: Date, to: Date)` | Access events from the BuildingLink Calendar              |
+| Occupant      | `getOccupant()`                   | Access the current occupant's profile                     |
+| Buildings     | `getBuildings()`                  | Access buildings associated with the BuildingLink account |
+| User          | `getUser()`                       | Access the current user signed into BuildingLink          |
+| Vendors       | `getVendors()`                    | Access preferred vendors from the BuildingLink            |
+| Deliveries    | `getDeliveries()`                 | Access deliveries from the BuildingLink                   |
+
+## 📝 Scraping HTML
 
 Since it's likely you'll be using this client for scraping, the response also includes a parsed version of the HTML document using `node-html-parser`. You can access it on html responses from the `document` property.
 
 ```typescript
-const { document } = await client.fetchTenantPage("Deliveries/Deliveries.aspx");
+const { document } = await client.page("Deliveries/Deliveries.aspx");
 
 document.querySelectorAll(".delivery-item").forEach((item) => {
   const deliveryId = item.getAttribute("data-delivery-id");
@@ -48,56 +57,6 @@ document.querySelectorAll(".delivery-item").forEach((item) => {
   console.log(`Delivery ID: ${deliveryId}, Date: ${deliveryDate}`);
 });
 ```
-
-## 📦 Available Modules
-
-### 📚 Library Module
-
-The Library module allows you to access documents from the BuildingLink document library.
-
-```typescript
-import { BuildingLinkClient, DocumentVisibility } from "buildinglink";
-
-const client = new BuildingLinkClient({
-  username: "buildinglink_username",
-  password: "buildinglink_password",
-});
-
-// documents() is an async generator function, so you can use it with for await
-// to iterate through all documents (basic information only)
-for await (const doc of client.library.listDocuments()) {
-  console.log(`Document Title: ${doc.title}`);
-  console.log(`Posted By: ${doc.postedBy}`);
-  console.log(`Posted On: ${doc.postedOn.toLocaleDateString()}`);
-  console.log(`Tags: ${doc.tags.join(", ")}`);
-  console.log(`Download URL: ${doc.downloadUrl}`);
-}
-
-// Download a document file
-if (buildingDoc.downloadUrl) {
-  const response = await client.fetch(buildingDoc.downloadUrl);
-  const fileBuffer = await response.arrayBuffer();
-  // Now you can save or process the file
-  console.log(`Downloaded ${buildingDoc.fileName}, size: ${fileBuffer.byteLength} bytes`);
-}
-```
-
-### Document Properties
-
-The `LibraryDocument` interface provides the following properties:
-
-| Property      | Type              | Description                                            |
-| ------------- | ----------------- | ------------------------------------------------------ |
-| isAptDocument | boolean           | Whether the document is building-wide or unit-specific |
-| title         | string            | The title of the document                              |
-| tags          | string[]          | Array of tags associated with the document             |
-| postedBy      | string            | Name of the user who posted the document               |
-| postedOn      | Date              | Date when the document was posted                      |
-| viewUrl       | string            | URL where the document can be viewed                   |
-| downloadUrl   | string (nullable) | URL to download the document                           |
-| fileId        | number (nullable) | File ID of the document                                |
-| fileName      | string (nullable) | Filename of the document                               |
-| fileSize      | number (nullable) | File size of the document                              |
 
 ## 🧪 Testing
 

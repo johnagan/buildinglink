@@ -1,1 +1,2 @@
-export { BuildingLinkClient } from "./client";
+export { BuildingLink, BuildingLinkResponse } from "./BuildingLink";
+export * from "./models";
