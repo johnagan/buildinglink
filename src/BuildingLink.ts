@@ -33,14 +33,6 @@ const BUILDINGLINK_TENANT_PATH = "V2/Tenant";
 /** Path to the BuildingLink home page */
 const BUILDINGLINK_HOME_PATH = "Home/DefaultNew.aspx";
 
-/** BuildingLink's subscription key to their Azure instance
- * the value that's hardcoded comes from the mobile app */
-const BUILDINGLINK_OCP_APIM_SUBSCRIPTION_KEY = "44bfe3e668e84af5b21ed663a5448595";
-
-/** BuildingLink API key for their authentication API
- * the value that's hardcoded comes from the mobile app */
-const BUILDINGLINK_API_KEY = "awrd5hjfgm5gojbw1vwu2aq812drp6ydq5lwte5b";
-
 /**
  * BuildingLink authentication credentials
  */
@@ -49,12 +41,12 @@ export interface BuildingLinkOptions {
   username: string;
   /** BuildingLink password */
   password: string;
+  /** BuildingLink's subscription key to their Azure instance */
+  subscriptionKey: string;
+  /** BuildingLink's API key for their authentication API */
+  apiKey: string;
   /** Base URL for BuildingLink instance */
   baseUrl?: string;
-  /** BuildingLink's subscription key to their Azure instance */
-  subscriptionKey?: string;
-  /** BuildingLink's API key for their authentication API */
-  apiKey?: string;
 }
 
 /**
@@ -93,9 +85,7 @@ export class BuildingLink {
   constructor(options: BuildingLinkOptions) {
     // Set option defaults
     this.options = {
-      apiKey: BUILDINGLINK_API_KEY,
       baseUrl: BUILDINGLINK_BASE_URL,
-      subscriptionKey: BUILDINGLINK_OCP_APIM_SUBSCRIPTION_KEY,
       ...options,
     };
 
