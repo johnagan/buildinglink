@@ -1,6 +1,6 @@
 export * from "./Occupant";
 export * from "./Library";
-export * from "./Property";
+export * from "./Building";
 export * from "./Vendor";
 export * from "./Event";
 export * from "./User";
