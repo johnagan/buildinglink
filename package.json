@@ -1,6 +1,6 @@
 {
   "name": "buildinglink",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "A TypeScript client for interacting with the BuildingLink system, handling various authentication flows and redirects.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,8 +12,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "build": "rm -rf dist && tsc",
-    "publish": "pnpm publish --provenance --access public --no-git-checks"
+    "build": "rm -rf dist && tsc"
   },
   "keywords": [
     "buildinglink",
