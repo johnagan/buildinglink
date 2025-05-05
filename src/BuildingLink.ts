@@ -33,6 +33,10 @@ const BUILDINGLINK_TENANT_PATH = "V2/Tenant";
 /** Path to the BuildingLink home page */
 const BUILDINGLINK_HOME_PATH = "Home/DefaultNew.aspx";
 
+/** BuildingLink's subscription key to their Azure instance
+ * Pulled from https://frontend-assets.buildinglink.com/js-shared-config-micro/1.0.24/js/index.js */
+const BUILDINGLINK_SUBSCRIPTION_KEY = "d56c27729c5845ba94f51efd93155a71";
+
 /**
  * BuildingLink authentication credentials
  */
@@ -42,9 +46,9 @@ export interface BuildingLinkOptions {
   /** BuildingLink password */
   password: string;
   /** BuildingLink's subscription key to their Azure instance */
-  subscriptionKey: string;
+  subscriptionKey?: string;
   /** BuildingLink's API key for their authentication API */
-  apiKey: string;
+  apiKey?: string;
   /** Base URL for BuildingLink instance */
   baseUrl?: string;
 }
@@ -72,6 +76,7 @@ export class BuildingLink {
   public cookies: Record<string, string> = {};
   /** Authentication token */
   public token: BuildingLinkToken | undefined;
+
   /** Client hooks */
   public hooks: {
     requests: Array<(url: string, request: RequestInit) => Promise<RequestInit>>;
@@ -86,6 +91,7 @@ export class BuildingLink {
     // Set option defaults
     this.options = {
       baseUrl: BUILDINGLINK_BASE_URL,
+      subscriptionKey: BUILDINGLINK_SUBSCRIPTION_KEY,
       ...options,
     };
 

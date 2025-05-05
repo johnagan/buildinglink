@@ -12,7 +12,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "build": "rm -rf dist && tsc"
+    "build": "rm -rf dist && tsc",
+    "watch": "tsc --watch"
   },
   "keywords": [
     "buildinglink",
