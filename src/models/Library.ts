@@ -28,7 +28,9 @@ export const BuildingLinkLibraryDocumentSchema = z.object({
   fileBytes: z.instanceof(Uint8Array).optional(),
 });
 
-export type BuildingLinkLibraryDocument = z.infer<typeof BuildingLinkLibraryDocumentSchema>;
+export type BuildingLinkLibraryDocument = z.infer<
+  typeof BuildingLinkLibraryDocumentSchema
+>;
 
 /**
  * Represents the BuildingLink library, containing both building-wide and unit-specific documents.
@@ -57,9 +59,12 @@ const parseDate = (date: string | undefined) => {
  * @param row - The row
  */
 const addCategory = (categories: string[], row: HTMLElement) => {
-  const category = row.querySelector("td:nth-child(2)")?.textContent?.trim() || "";
+  const category =
+    row.querySelector("td:nth-child(2)")?.textContent?.trim() || "";
   if (category) {
-    const cleanCategory = category.replace(/\s*\(\d+(?:\s+\w+)?\)\s*$/, "").trim();
+    const cleanCategory = category
+      .replace(/\s*\(\d+(?:\s+\w+)?\)\s*$/, "")
+      .trim();
     categories.push(cleanCategory);
   }
 };
@@ -106,8 +111,12 @@ export function parseDocumentFromTable({
     if (!fileId) continue;
 
     // Get the view and download pages
-    const viewPage = isAptDocument ? `ViewAptDocuments.aspx?documentid=${fileId}` : `viewlibdoc.aspx?id=${fileId}`;
-    const downloadPage = isAptDocument ? `GetAttachment.aspx?documentId=${fileId}` : `getFile.aspx?id=${fileId}`;
+    const viewPage = isAptDocument
+      ? `ViewAptDocuments.aspx?documentid=${fileId}`
+      : `viewlibdoc.aspx?id=${fileId}`;
+    const downloadPage = isAptDocument
+      ? `GetAttachment.aspx?documentId=${fileId}`
+      : `getFile.aspx?id=${fileId}`;
 
     // Get the cells
     const cells = row.querySelectorAll("td");
@@ -138,6 +147,7 @@ export function parseDocumentFromTable({
       postedOn,
       revisedOn,
       categories,
+      fileId: parseInt(fileId),
       viewUrl: new URL(viewPage, url).toString(),
       downloadUrl: new URL(downloadPage, url).toString(),
     };
@@ -156,7 +166,10 @@ export function parseDocumentFromTable({
  * @param url - The URL of the library
  * @returns The BuildingLink library
  */
-export function parseLibrary(document: HTMLElement, url: string): BuildingLinkLibrary {
+export function parseLibrary(
+  document: HTMLElement,
+  url: string
+): BuildingLinkLibrary {
   const aptTable = document.querySelector("#GridAptDocumentsCon") || undefined;
   const buildingTable = document.querySelector("#LibraryGridView") || undefined;
 

@@ -384,6 +384,10 @@ export class BuildingLink {
   async getUser(): Promise<BuildingLinkUser> {
     const url = "https://users.us1.buildinglink.com/users/authenticated";
 
+    if (!this.options.apiKey) {
+      throw new Error("API key is required");
+    }
+
     const response = await this.fetch(url, {
       headers: {
         "x-api-key": this.options.apiKey!,
