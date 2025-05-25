@@ -137,6 +137,7 @@ export function parseDocumentFromTable({
         currentRow = currentRow.previousElementSibling;
         if (currentRow.classList.contains("rgGroupHeader")) {
           addCategory(categories, currentRow);
+          break;
         }
       }
     }
