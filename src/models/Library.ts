@@ -145,12 +145,16 @@ export function parseDocumentFromTable({
     const doc: BuildingLinkLibraryDocument = {
       title,
       postedOn,
-      revisedOn,
       categories,
       fileId: parseInt(fileId),
       viewUrl: new URL(viewPage, url).toString(),
       downloadUrl: new URL(downloadPage, url).toString(),
     };
+
+    // nullable fields
+    if (revisedOn) {
+      doc.revisedOn = revisedOn;
+    }
 
     if (doc) {
       documents.push(doc);
