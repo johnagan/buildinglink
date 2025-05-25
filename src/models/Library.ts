@@ -60,7 +60,10 @@ const parseDate = (date: string | undefined) => {
  */
 const addCategory = (categories: string[], row: HTMLElement) => {
   const category =
-    row.querySelector("td:nth-child(2)")?.textContent?.trim() || "";
+    row
+      .querySelector("td:nth-child(2)")
+      ?.textContent?.replace(/\s+/g, " ")
+      .trim() || "";
   if (category) {
     const cleanCategory = category
       .replace(/\s*\(\d+(?:\s+\w+)?\)\s*$/, "")
