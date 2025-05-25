@@ -32,17 +32,10 @@ export type BuildingLinkLibraryDocument = z.infer<
   typeof BuildingLinkLibraryDocumentSchema
 >;
 
-/**
- * Represents the BuildingLink library, containing both building-wide and unit-specific documents.
- */
-export const BuildingLinkLibrary = z.object({
-  /** Array of documents belonging to the building */
-  aptDocuments: z.array(BuildingLinkLibraryDocumentSchema),
-  /** Array of documents belonging to a specific unit */
-  buildingDocuments: z.array(BuildingLinkLibraryDocumentSchema),
-});
-
-export type BuildingLinkLibrary = z.infer<typeof BuildingLinkLibrary>;
+export type BuildingLinkLibrary = {
+  aptDocuments: BuildingLinkLibraryDocument[];
+  buildingDocuments: BuildingLinkLibraryDocument[];
+};
 
 /**
  * Parses a date from a string
